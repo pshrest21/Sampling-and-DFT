@@ -1,41 +1,125 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+from scipy import signal
 
-def series():
-    x = np.linspace(0,400, 500)
-    y = 1 + np.cos((2*np.pi*x)/256) + np.cos((4*np.pi*x)/256) + np.cos((6*np.pi*x)/256)
+def series(x, y):  
      
-    Y = np.fft.fft(y)
-    X = x[1] - x[0]
-    N = y.size
+    plt.subplot(211)
+    plt.plot(x, y)
+    plt.xlabel('Time')
+    plt.ylabel('Amplitude')
     
-    f = np.linspace(0,1/X,N)
-      
-    iy = np.fft.ifft(Y)
-     
-    plt.ylabel("Amplitude")
+    plt.subplot(212)
+    plt.magnitude_spectrum(y, Fs = 10)
     plt.xlabel("Frequency [Hz]")
-    plt.plot(f, Y)
-    #plt.plot(x, iy)
-        
+    plt.ylabel("Amplitude")
     plt.show()
     
 def dft(img):
     f = np.fft.fft2(img)  
     ft = np.fft.fftshift(f)
     ms = 20 * np.log(np.abs(ft))
-    ms = np.asarray(ms, dtype=np.uint8)  
-    return ms
+    return ft, ms
 
-#series()
-img = cv2.imread("image2.pgm",0)
-fourier_transform = dft(img)
 
-cv2.imshow("Image1", img)
-cv2.imshow("Fourier Transformed Image", fourier_transform)
+def sample(x , y, n): 
+    f = signal.resample(y, n)
+    xnew = np.linspace(0, 400, n, endpoint= False)
+    return f , xnew
 
 
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+def high_pass_filter(img):
+    
+    fshift, ms = dft(img)
+    rows, cols = img.shape
+    crow,ccol = rows/2 , cols/2
+    
+    fshift[int(crow)-30:int(crow)+30, int(ccol)-30:int(ccol)+30] = 0
+    
+    f_ishift = np.fft.ifftshift(fshift)
+    img_back = np.fft.ifft2(f_ishift)
+    img_back = np.abs(img_back)
+    return img_back
+
+def low_pass_filter(img):
+    fshift, ms = dft(img)
+    rows, cols = img.shape
+    crow,ccol = rows/2 , cols/2
+    
+    mask = np.zeros([rows, cols])
+    mask[int(crow)-30:int(crow)+30, int(ccol)-30:int(ccol)+30] = 1
+    
+    fshift = fshift*mask    
+    f_ishift = np.fft.ifftshift(fshift)
+    img_back = np.fft.ifft2(f_ishift)
+    img_back = np.abs(img_back)
+    return img_back    
+
+
+def displaySampleFunction(x , y, n):
+    f, xnew = sample(x,y, n)
+    plt.plot(x,y)
+    #plt.plot(xnew, f)
+    plt.stem(xnew, f, linefmt='r-', markerfmt='rs', basefmt='r-')
+    plt.show()
+
+
+
+def displayFourierImage(img, fourier_transform, title):
+    plt.subplot(121), plt.imshow(img, cmap = 'gray')
+    plt.title('Input Image'), plt.xticks([]), plt.yticks([])
+    plt.subplot(122), plt.imshow(fourier_transform, cmap='gray')
+    plt.title(title), plt.xticks([]), plt.yticks([])
+    plt.show()
+
+
+x = np.linspace(0,400, 400)
+y = 1 + np.cos((2*np.pi*x)/256) + np.cos((4*np.pi*x)/256) + np.cos((6*np.pi*x)/256)
+img1 = cv2.imread('Image1.pgm',0)
+img2 = cv2.imread('Image2.pgm',0)
+
+#Display the function in time and frequency domain
+series(x,y)
+
+#Display the function after sampling
+displaySampleFunction(x, y, 10)
+
+#fourier transform of the images
+ft, ms = dft(img1)
+ft2, ms2 = dft(img2)
+
+#display the log-magnitude of the frequency spectra
+displayFourierImage(img1, ms, 'Fourier Transform of Image1.pgm')
+displayFourierImage(img2, ms2, 'Fourier Transform of Image2.pgm')
+
+#apply the high pass filter to images
+img_back = high_pass_filter(img1)
+displayFourierImage(img1, img_back, 'High Pass Filter')
+
+img_back = high_pass_filter(img2)
+displayFourierImage(img2, img_back, 'High Pass Filter')
+
+
+#apply the low pass filter to the images
+img_back2 = low_pass_filter(img1)
+displayFourierImage(img1, img_back2, 'Low Pass Filter')
+
+img_back2 = low_pass_filter(img2)
+displayFourierImage(img2, img_back2, 'Low Pass Filter')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
