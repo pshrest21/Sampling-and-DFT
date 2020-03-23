@@ -18,17 +18,16 @@ def series(x, y):
     
 def fourierSeries(x,y):
     f = np.fft.fft(y)
-    #plt.subplot(211)
+    plt.subplot(211)
     plt.plot(x, y)
     plt.xlabel('Time')
     plt.ylabel('Amplitude')
     
-    '''
     plt.subplot(212)
     plt.plot(x,f)
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude")
-    '''
+    
     plt.show()
     
     
@@ -87,13 +86,12 @@ def displaySampleFunction(x , y, n):
 
 
 def displayFourierImage(img, fourier_transform, title):
-    #plt.subplot(121), plt.imshow(img, cmap = 'gray')
-    #plt.title('Input Image'), plt.xticks([]), plt.yticks([])
-    #plt.subplot(122),
+    plt.subplot(121), plt.imshow(img, cmap = 'gray')
+    plt.title('Input Image'), plt.xticks([]), plt.yticks([])
+    plt.subplot(122),
     plt.imshow(fourier_transform, cmap='gray')
     plt.title(title), plt.xticks([]), plt.yticks([])
     plt.show()
-
 
 
 x = np.linspace(0,400, 400)
@@ -106,6 +104,20 @@ img2 = cv2.imread('Image2.pgm',0)
 #fourier transform of the images
 ft, ms = dft(img1)
 ft2, ms2 = dft(img2)
+
+#Display the function in time and frequency domain
+series(x,y)
+
+#Display the function after sampling
+
+#fourier transform of the images
+ft, ms = dft(img1)
+ft2, ms2 = dft(img2)
+
+#display the log-magnitude of the frequency spectra
+displayFourierImage(img1, ms, 'Fourier Transform of Image1.pgm')
+displayFourierImage(img2, ms2, 'Fourier Transform of Image2.pgm')
+
 
 n = 10
 #apply the high pass filter to images
@@ -123,37 +135,6 @@ displayFourierImage(img1, img_back2, 'Low Pass Filter')
 img_back2 = low_pass_filter(img2,n)
 displayFourierImage(img2, img_back2, 'Low Pass Filter')
 
-
-'''
-
-#Display the function in time and frequency domain
-series(x,y)
-
-#Display the function after sampling
-
-#fourier transform of the images
-ft, ms = dft(img1)
-ft2, ms2 = dft(img2)
-
-#display the log-magnitude of the frequency spectra
-displayFourierImage(img1, ms, 'Fourier Transform of Image1.pgm')
-displayFourierImage(img2, ms2, 'Fourier Transform of Image2.pgm')
-
-#apply the high pass filter to images
-img_back = high_pass_filter(img1)
-displayFourierImage(img1, img_back, 'High Pass Filter')
-
-img_back = high_pass_filter(img2)
-displayFourierImage(img2, img_back, 'High Pass Filter')
-
-
-#apply the low pass filter to the images
-img_back2 = low_pass_filter(img1)
-displayFourierImage(img1, img_back2, 'Low Pass Filter')
-
-img_back2 = low_pass_filter(img2)
-displayFourierImage(img2, img_back2, 'Low Pass Filter')
-'''
 
 
 
